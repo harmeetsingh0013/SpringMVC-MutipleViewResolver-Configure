@@ -3,16 +3,9 @@
  */
 package com.harmeetsingh13config;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import nz.net.ultraq.thymeleaf.LayoutDialect;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.accept.ContentNegotiationManager;
-import org.springframework.web.servlet.ViewResolver;
-import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
@@ -28,7 +21,8 @@ import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
  *
  */
 @Configuration
-public class MultiViewResolver {
+public class MultiViewResolverSecondWay {
+
 
 	@Bean
 	public TilesConfigurer tilesConfigure() {
@@ -36,62 +30,48 @@ public class MultiViewResolver {
 		configurer.setDefinitions(new String[]{"classpath:tiles/admin-def.xml"});
 		return configurer;
 	}
-	
 	@Bean
-	public TilesViewResolver tilesViewResolver() {
+	public TilesViewResolver viewResolver() {
 		TilesViewResolver resolver = new TilesViewResolver();
-		resolver.setCache(false);
+		resolver.setOrder(0);
 		return resolver;
 	}
 	
-	
 	/* Thymeleaf configuration */
-	private ServletContextTemplateResolver templateResolver() {
+	@Bean
+	public ServletContextTemplateResolver templateResolver() {
 		ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver();
 		templateResolver.setPrefix("/WEB-INF/views/");
 		templateResolver.setSuffix(".html");
 		templateResolver.setTemplateMode("HTML5");
-		templateResolver.setCacheable(false);
+		templateResolver.setOrder(1);
 		return templateResolver;
 	}
-	
-	private SpringTemplateEngine templateEngine() {
+	@Bean
+	@Autowired
+	public SpringTemplateEngine templateEngine(ServletContextTemplateResolver templateResolver) {
 		SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-		templateEngine.addDialect(new LayoutDialect());
-		templateEngine.setTemplateResolver(templateResolver());
+		templateEngine.setTemplateResolver(templateResolver);
 		return templateEngine;
 	}
-	
-	private ThymeleafViewResolver thymeleafViewResolver() {
+	@Bean
+	@Autowired
+	public ThymeleafViewResolver thymeleafViewResolver(SpringTemplateEngine templateEngine) {
 		ThymeleafViewResolver thymeleafViewResolver = new ThymeleafViewResolver();
 		thymeleafViewResolver.setViewClass(ThymeleafView.class);
 		thymeleafViewResolver.setViewNames(new String[]{"thymeleaf/*"});
-		thymeleafViewResolver.setTemplateEngine(templateEngine());
+		thymeleafViewResolver.setTemplateEngine(templateEngine);
 		return thymeleafViewResolver;
 	}
 	
 	/* JSP view resolver */
-	
-	private InternalResourceViewResolver jspViewResolver() {
-		InternalResourceViewResolver resolver  = new InternalResourceViewResolver();
+	@Bean
+	public InternalResourceViewResolver jspViewResolver() {
+		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
 		resolver.setPrefix("/WEB-INF/views/");
 		resolver.setSuffix(".jsp");
 		resolver.setViewClass(JstlView.class);
-		resolver.setCache(false);
-		return resolver;
-	}
-	
-	@Bean
-	public ViewResolver setupViewResolver(ContentNegotiationManager manager) {
-		List<ViewResolver> resolvers = new ArrayList<ViewResolver>();
-		
-		resolvers.add(tilesViewResolver());
-		resolvers.add(thymeleafViewResolver());
-		resolvers.add(jspViewResolver());
-		
-		ContentNegotiatingViewResolver viewResolver = new ContentNegotiatingViewResolver();
-		viewResolver.setViewResolvers(resolvers);
-		viewResolver.setContentNegotiationManager(manager);
-		return viewResolver;
+		//resolver.setOrder(2);
+	return resolver;
 	}
 }
