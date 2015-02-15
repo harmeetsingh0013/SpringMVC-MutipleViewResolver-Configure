@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.harmeetsingh13config;
+package com.harmeetsingh13.config;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
